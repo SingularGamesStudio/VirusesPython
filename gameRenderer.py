@@ -7,6 +7,7 @@ class GameRenderer:
     height = 0
     scale = 1
     buttonScale = 2
+    show = False
 
     def __init__(self, gameSize):
         global SPRITE_SZ, OFFSET
@@ -33,18 +34,55 @@ class GameRenderer:
             for j in range(game.size):
                 curRect = pygame.Rect(
                     rect.left+i*(SPRITE_SZ*self.scale+OFFSET)+OFFSET, rect.top+j*(SPRITE_SZ*self.scale+OFFSET)+OFFSET, SPRITE_SZ*self.scale, SPRITE_SZ*self.scale)
-                screen.blit(self.emptySprite, curRect)
+                img = self.emptySprite.copy()
+                pixels = pygame.PixelArray(img)
+                color = (255, 255, 255)
+                if self.show and game.legal[i][j]:
+                    color = (204, 181, 219)
+                pixels.replace(self.replaceColor, color)
+                del pixels
+                screen.blit(img, curRect)
                 if (game.field[i][j].owner != -1):
                     img = self.aliveSprite.copy()
                     pixels = pygame.PixelArray(img)
-                    pixels.replace(self.replaceColor,
-                                   self.playerColors[game.field[i][j].owner])
+                    color = self.playerColors[game.field[i][j].owner] if game.alive[game.field[i][j].owner] else (
+                        200, 200, 200)
+                    pixels.replace(self.replaceColor, color)
                     del pixels
                     screen.blit(img, curRect)
                 if (game.field[i][j].killer != -1):
                     img = self.killSprite.copy()
                     pixels = pygame.PixelArray(img)
-                    pixels.replace(self.replaceColor,
-                                   self.playerColors[game.field[i][j].killer])
+                    color = self.playerColors[game.field[i][j].killer] if game.alive[game.field[i][j].killer] else (
+                        200, 200, 200)
+                    pixels.replace(self.replaceColor, color)
                     del pixels
                     screen.blit(img, curRect)
+
+    def renderText(self, game, screen):
+        global SPRITE_SZ
+
+        len = 0
+        images = [pygame.image.load(
+            'sprites/text/player.png'), pygame.image.load('sprites/text/'+str(game.curPlayer+1)+'.png')]
+        if game.finished:
+            len = (80+32+50)*self.buttonScale
+            images.append(pygame.image.load('sprites/text/win.png'))
+        else:
+            len = (80+32+64+32+4)*self.buttonScale
+            images.append(pygame.image.load('sprites/text/turn(.png'))
+            images.append(pygame.image.load('sprites/text/' +
+                          str(game.remainingActions)+'.png'))
+            images.append(pygame.image.load('sprites/text/).png'))
+        left = (self.width-len)//2
+        top = self.height-SPRITE_SZ*self.buttonScale
+        for img in images:
+            img = pygame.transform.scale(
+                img, (img.get_width()*self.buttonScale, img.get_height()*self.buttonScale))
+            pixels = pygame.PixelArray(img)
+            color = self.playerColors[game.curPlayer]
+            pixels.replace(self.replaceColor, color)
+            del pixels
+            screen.blit(img, pygame.Rect(
+                left, top, img.get_width(), img.get_height()))
+            left += img.get_width()

@@ -17,7 +17,7 @@ def getGameRect(renderer, gameSize):
 
 
 def main():
-    game = Game(14, 2)
+    game = Game(10, 2)
     pygame.init()
     clock = pygame.time.Clock()
     renderer = GameRenderer(game.size)
@@ -41,11 +41,12 @@ def main():
                     try:
                         game.go(x, y)
                     except Exception as e:
-                        print("wrong move")
+                        print(e)
 
         screen.fill((0, 0, 0))
         pygame.draw.rect(screen, (100, 100, 100), backgroundRect)
         renderer.renderGame(game, screen, backgroundRect)
+        renderer.renderText(game, screen)
         pygame_widgets.update(events)
 
         pygame.display.flip()

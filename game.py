@@ -14,15 +14,23 @@ class Node:
         else:
             raise Exception("cannot make turn in your own cell")
 
+    def undo(self):
+        if self.killer != -1:
+            self.killer = -1
+        else:
+            self.owner = -1
+
 
 class Game:
-
     def __init__(self, sz, players):
+        self.finished = False
+        self.turns = [(0, 0), (0, 0), (0, 0)]
         if players != 2 and players != 4:
             raise Exception("there could only be 2 or 4 players")
         if (sz < 4):
             raise Exception("size must be at least 4")
         self.players = players
+        self.alive = [True]*players
         self.size = sz
         self.field = [[Node() for i in range(sz)] for j in range(sz)]
         self.field[sz-1][0] = Node(0)
@@ -44,6 +52,7 @@ class Game:
                 if self.field[x][y].killer == -1 and self.field[x][y].owner == self.curPlayer:
                     stack.append((x, y))
                     used[x][y] = True
+        cnt = 0
         while len(stack) > 0:
             pos = stack.pop()
             for dx in range(-1, 2):
@@ -55,15 +64,44 @@ class Game:
                                 stack.append((pos1[0], pos1[1]))
                             elif self.field[pos1[0]][pos1[1]].killer == -1:
                                 self.legal[pos1[0]][pos1[1]] = True
+                                cnt += 1
                             used[pos[0]+dx][pos[1]+dy] = True
+        if cnt == 0:
+            self.die()
 
     def go(self, x, y):
-        if not self.legal[x][y]:
-            raise Exception("cannot make this move")
-        else:
-            self.field[x][y].go(self.curPlayer)
-        self.remainingActions -= 1
-        if self.remainingActions == 0:
+        if not self.finished:
+            if not self.legal[x][y]:
+                raise Exception("cannot make this move")
+            else:
+                self.field[x][y].go(self.curPlayer)
+            self.turns[3-self.remainingActions] = (x, y)
+            self.remainingActions -= 1
+            if self.remainingActions == 0:
+                self.remainingActions = 3
+                self.curPlayer = (self.curPlayer+1) % self.players
+                while not self.alive[self.curPlayer]:
+                    self.curPlayer = (self.curPlayer+1) % self.players
+            self.updateLegal()
+
+    def undo(self):
+        if (not self.finished) and self.remainingActions != 3:
+            self.remainingActions += 1
+            pos = self.turns[3-self.remainingActions]
+            self.field[pos[0]][pos[1]].undo()
+            self.updateLegal()
+
+    def die(self):
+        if not self.finished:
+            self.alive[self.curPlayer] = False
             self.remainingActions = 3
-            self.curPlayer = (self.curPlayer+1) % self.players
-        self.updateLegal()
+            cnt = 0
+            for i in range(self.players):
+                if self.alive[i]:
+                    cnt += 1
+            while not self.alive[self.curPlayer]:
+                self.curPlayer = (self.curPlayer+1) % self.players
+            if cnt == 1:
+                self.finished = True
+            else:
+                self.updateLegal()

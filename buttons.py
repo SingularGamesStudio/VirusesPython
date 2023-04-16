@@ -26,10 +26,11 @@ class ButtonManager:
         self.buttons["players"] = Button(
             screen,
             0,
-            0,
+            2*OFFSET,
             sz,
             sz,
 
+            inactiveColour=(0, 0, 0),
             image=self.getButtonImage(
                 str(self.newParams["players"])+"plr"),
             onClick=self.changePlayers
@@ -37,34 +38,71 @@ class ButtonManager:
         self.buttons["size"] = Button(
             screen,
             0,
-            sz+OFFSET,
+            1*sz+4*OFFSET,
             sz,
             sz,
 
+            inactiveColour=(0, 0, 0),
             image=self.getButtonImage(str(game.size)+"x"+str(game.size)),
             onClick=self.resize
         )
         self.buttons["apply"] = Button(
             screen,
             0,
-            2*sz+2*OFFSET,
+            2*sz+6*OFFSET,
             sz,
             sz,
 
+            inactiveColour=(0, 0, 0),
             image=self.getButtonImage("reset"),
             onClick=self.apply
+        )
+        self.buttons["show"] = Button(
+            screen,
+            0,
+            4*sz+10*OFFSET,
+            sz,
+            sz,
+
+            inactiveColour=(0, 0, 0),
+            image=self.getButtonImage(
+                "visible") if self.renderer.show else self.getButtonImage("hidden"),
+            onClick=self.show
         )
 
         self.buttons["scale"] = Button(
             screen,
             self.renderer.width-sz,
-            0,
+            2*OFFSET,
             sz,
             sz,
 
+            inactiveColour=(0, 0, 0),
             image=self.getButtonImage(
                 "upscale") if self.renderer.scale == 1 else self.getButtonImage("downscale"),
             onClick=self.resizeScreen
+        )
+        self.buttons["undo"] = Button(
+            screen,
+            self.renderer.width-sz,
+            3*sz+8*OFFSET,
+            sz,
+            sz,
+
+            inactiveColour=(0, 0, 0),
+            image=self.getButtonImage("undo"),
+            onClick=self.undo
+        )
+        self.buttons["concede"] = Button(
+            screen,
+            self.renderer.width-sz,
+            4*sz+10*OFFSET,
+            sz,
+            sz,
+
+            inactiveColour=(0, 0, 0),
+            image=self.getButtonImage("concede"),
+            onClick=self.concede
         )
 
     def getButtonImage(self, s):
@@ -104,7 +142,7 @@ class ButtonManager:
     def resizeScreen(self):
         if (self.renderer.scale == 1):
             self.renderer.scale = 2
-            self.renderer.buttonScale = 3
+            self.renderer.buttonScale = 4
             self.buttons["scale"].image = self.getButtonImage("downscale")
         else:
             self.renderer.scale = 1
@@ -114,3 +152,14 @@ class ButtonManager:
         self.screen = pygame.display.set_mode(
             (self.renderer.width, self.renderer.height))
         self.__init__(self.screen, self.renderer, self.game)
+
+    def undo(self):
+        self.game.undo()
+
+    def concede(self):
+        self.game.die()
+
+    def show(self):
+        self.renderer.show = not self.renderer.show
+        self.buttons["show"].image = self.getButtonImage(
+            "visible") if self.renderer.show else self.getButtonImage("hidden")
