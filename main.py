@@ -1,44 +1,53 @@
 import pygame
-import random
 from globals import *
+from buttons import ButtonManager
 from gameRenderer import GameRenderer
 from game import Game
+import pygame_widgets
 
 
-def draw(screen, game, renderer, backgroundRect):
+def getGameRect(renderer, gameSize):
     global SPRITE_SZ, OFFSET
 
-    pygame.draw.rect(screen, (100, 100, 100), backgroundRect)
-    renderer.render(game, screen, backgroundRect)
+    BACK_SZ = gameSize*(renderer.scale*SPRITE_SZ+OFFSET) + OFFSET
+    backgroundRect = pygame.Rect(0, 0, BACK_SZ, BACK_SZ)
+    backgroundRect.centerx = renderer.width/2
+    backgroundRect.centery = BACK_SZ/2
+    return backgroundRect
 
 
 def main():
-    global WIDTH, HEIGHT, FPS
+    game = Game(14, 2)
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
-    game = Game(10, 2)
-    renderer = GameRenderer()
-    currentPlayer = 0
-    actions = 3
+    renderer = GameRenderer(game.size)
+    screen = pygame.display.set_mode((renderer.width, renderer.height))
+    buttons = ButtonManager(screen, renderer, game)
 
     running = True
     while running:
         clock.tick(FPS)
-        BACK_SZ = game.size*(SPRITE_SZ+OFFSET) + OFFSET
-        backgroundRect = pygame.Rect(0, 0, BACK_SZ, BACK_SZ)
-        for event in pygame.event.get():
+        backgroundRect = getGameRect(renderer, game.size)
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 if backgroundRect.collidepoint(event.pos):
-                    x = event.pos[0]//(SPRITE_SZ+OFFSET)
-                    y = event.pos[1]//(SPRITE_SZ+OFFSET)
+                    x = (
+                        event.pos[0]-backgroundRect.left)//(renderer.scale*SPRITE_SZ+OFFSET)
+                    y = (
+                        event.pos[1] - backgroundRect.top)//(renderer.scale*SPRITE_SZ+OFFSET)
                     try:
                         game.go(x, y)
-                    except:
+                    except Exception as e:
                         print("wrong move")
-        draw(screen, game, renderer, backgroundRect)
+
+        screen.fill((0, 0, 0))
+        pygame.draw.rect(screen, (100, 100, 100), backgroundRect)
+        renderer.renderGame(game, screen, backgroundRect)
+        pygame_widgets.update(events)
+
         pygame.display.flip()
 
 
