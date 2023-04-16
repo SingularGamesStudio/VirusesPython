@@ -20,6 +20,7 @@ class ButtonManager:
         sz = SPRITE_SZ*self.renderer.buttonScale
         self.newParams["players"] = self.game.players
         self.newParams["size"] = self.game.size
+        self.backColor = (0, 0, 0)
 
         for key in self.buttons:
             WidgetHandler.removeWidget(self.buttons[key])
@@ -30,7 +31,7 @@ class ButtonManager:
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage(
                 str(self.newParams["players"])+"plr"),
             onClick=self.changePlayers
@@ -42,7 +43,7 @@ class ButtonManager:
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage(str(game.size)+"x"+str(game.size)),
             onClick=self.resize
         )
@@ -53,18 +54,18 @@ class ButtonManager:
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage("reset"),
             onClick=self.apply
         )
         self.buttons["show"] = Button(
             screen,
             0,
-            4*sz+10*OFFSET,
+            3*sz+8*OFFSET,
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage(
                 "visible") if self.renderer.show else self.getButtonImage("hidden"),
             onClick=self.show
@@ -77,7 +78,7 @@ class ButtonManager:
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage(
                 "upscale") if self.renderer.scale == 1 else self.getButtonImage("downscale"),
             onClick=self.resizeScreen
@@ -85,22 +86,22 @@ class ButtonManager:
         self.buttons["undo"] = Button(
             screen,
             self.renderer.width-sz,
-            3*sz+8*OFFSET,
+            2*sz+6*OFFSET,
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage("undo"),
             onClick=self.undo
         )
         self.buttons["concede"] = Button(
             screen,
             self.renderer.width-sz,
-            4*sz+10*OFFSET,
+            3*sz+8*OFFSET,
             sz,
             sz,
 
-            inactiveColour=(0, 0, 0),
+            inactiveColour=self.backColor,
             image=self.getButtonImage("concede"),
             onClick=self.concede
         )

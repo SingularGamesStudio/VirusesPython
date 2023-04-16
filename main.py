@@ -23,6 +23,8 @@ def main():
     renderer = GameRenderer(game.size)
     screen = pygame.display.set_mode((renderer.width, renderer.height))
     buttons = ButtonManager(screen, renderer, game)
+    sepColor = (100, 100, 100)
+    backColor = (0, 0, 0)
 
     running = True
     while running:
@@ -43,8 +45,8 @@ def main():
                     except Exception as e:
                         print(e)
 
-        screen.fill((0, 0, 0))
-        pygame.draw.rect(screen, (100, 100, 100), backgroundRect)
+        screen.fill(backColor)
+        pygame.draw.rect(screen, sepColor, backgroundRect)
         renderer.renderGame(game, screen, backgroundRect)
         renderer.renderText(game, screen)
         pygame_widgets.update(events)
