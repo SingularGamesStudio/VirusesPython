@@ -3,36 +3,85 @@ import socket
 import selectors
 import types
 
+
 class Client:
     selector = selectors.DefaultSelector()
 
-    def __init__(self, host="127.0.0.1", port=7777):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setblocking(False)
-        sock.connect_ex((host, port))
-        events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        sel.register(sock, events, data=data)
+    sock = None
+
+    connected = False
+    authorize_requested = False
+    authorized = False
+    authorize_rejected = False
+
+    state = "main_menu"
+
+    def reconnect(self, host="127.0.0.1", port=7777):
+        if self.connected:
+            self.sock.close()
+            self.connected = False
+            self.authorize_requested = False
+            self.authorized = False
+        try:
+            self.sock.connect((host, port))
+            self.selector.register(self.sock, selectors.EVENT_READ, data=True)
+            self.connected = True
+            print("connected to server")
+        except:
+            pass
+
+    def authorize(self, login, password):
+        try:
+            self.sock.send(str.encode("auth "+login+" "+password))
+            self.authorize_requested = True
+            self.authorize_rejected = False
+            print("authorize requested")
+        except Exception as e:
+            pass
+
+    def __init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setblocking(False)
+
+    def eval(self, rec, data):
+        items = rec.split()
+        if items[0] == b"auth_success":
+            self.authorized = True
+            print("authorized")
+        elif items[0] == b"auth_denied":
+            self.authorized = False
+            self.authorize_requested = False
+            self.authorize_rejected = True
+
+    def receive(self, key, mask):
+        sock = key.fileobj
+        data = key.data
+        rec = sock.recv(2048)
+        if rec:
+            self.eval(rec, data)
+        else:
+            print("connection lost")
+            self.reconnect()
 
     def tick(self):
-        events = self.selector.select(timeout=None)
+        events = self.selector.select(timeout=0.01)
         for key, mask in events:
-            if key.data is None:
-                #what?
-            else:
-                self.service_connection(key, mask)
-        
 
-def start_connections(host, port, num_conns):
-    print(f"Starting connection {connid} to {server_addr}")
-    
-    
-    data = types.SimpleNamespace(
-        connid=connid,
-        msg_total=sum(len(m) for m in messages),
-        recv_total=0,
-        messages=messages.copy(),
-        outb=b"",
-    )
-    
+            self.receive(key, mask)
 
-start_connections("127.0.0.1", 7777, 2)
+
+'''
+net = Client()
+
+try:
+    while True:
+        while (not net.connected):
+            net.reconnect()
+
+        while (not net.authorize_requested):
+            net.authorize("biba", "abacaba")
+
+        net.tick()
+except KeyboardInterrupt:
+    net.sock.close()
+'''

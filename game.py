@@ -22,7 +22,9 @@ class Node:
 
 
 class Game:
-    def __init__(self, sz, players):
+    def __init__(self, sz=0, players=0):
+        if sz == 0 or players == 0:
+            return
         self.finished = False
         self.turns = [(0, 0), (0, 0), (0, 0)]
         if players != 2 and players != 4:
