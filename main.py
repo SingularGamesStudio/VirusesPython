@@ -4,6 +4,7 @@ from buttons import ButtonManager
 from gameRenderer import GameRenderer
 from game import Game
 import pygame_widgets
+import server
 
 
 def getGameRect(renderer, gameSize):
