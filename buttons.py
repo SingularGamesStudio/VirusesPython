@@ -30,7 +30,8 @@ class ButtonManager:
                 self.net.state+"...", False, (255, 255, 255))
             screen.blit(text_surface, ((self.renderer.width-300)/2, 0))
         if self.net.state == "error":
-            text_surface = self.font.render(
+            newfont = pygame.font.SysFont(None, 25)
+            text_surface = newfont.render(
                 self.net.last_error, False, (255, 255, 255))
             screen.blit(text_surface, ((self.renderer.width-300)/2, 0))
         if self.net.state == "login_window":

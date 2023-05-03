@@ -102,7 +102,7 @@ class Client:
         elif items[0] == b"stop_game":
             if self.state == "online_game" or self.state == "requested_match":
                 self.state = "error"
-                self.last_error = "ERROR: "+items[1]
+                self.last_error = "ERROR: "+str(items[1])
         elif items[0] == b"concede" and self.state == "online_game":
             self.game.die(int(items[1]))
         elif items[0] == b"go":
