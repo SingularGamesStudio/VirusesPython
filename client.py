@@ -30,7 +30,13 @@ class Client:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setblocking(False)
 
-    def reconnect(self, host="127.0.0.1", port=7777):
+    def reconnect(self):
+        host = "127.0.0.1"
+        port = 7777
+        with open("address.ini") as file:
+            host = file.read().split()
+            port = int(host[1])
+            host = host[0]
         if self.connected:
             self.disconnect()
         try:

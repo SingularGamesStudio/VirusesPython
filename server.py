@@ -15,7 +15,13 @@ class Server:
 
     mySocket = None
 
-    def __init__(self, host="127.0.0.1", port=7777):
+    def __init__(self):
+        host = "127.0.0.1"
+        port = 7777
+        with open("address.ini") as file:
+            host = file.read().split()
+            port = int(host[1])
+            host = host[0]
         self.mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.mySocket.bind((host, port))
         self.mySocket.listen()
