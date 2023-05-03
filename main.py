@@ -19,9 +19,11 @@ def getGameRect(renderer, gameSize):
 
 
 def main():
-    net = Client()
+
     running = True
     game = Game(10, 2)
+    net = Client(game)
+    game.net = net
     pygame.init()
     clock = pygame.time.Clock()
     renderer = GameRenderer(10)
@@ -52,19 +54,40 @@ def main():
         elif net.state == "login_window":
             buttons.tickTextBoxes(events, screen)
         elif net.state == "logging_in":
-            buttons.tickTextBoxes(events, screen)
-            if net.authorize_rejected:
-                net.authorize_rejected = False
-                print("authorize not successful")
-                net.state = "main_menu"
-            elif not net.authorize_requested:
-                net.authorize(buttons.loginText, buttons.passwordText)
+            if buttons.loginText == "" or buttons.passwordText == "":
+                net.state = "error"
+                net.last_error = "ERROR: Empty string"
+            elif ' ' in buttons.loginText or ' ' in buttons.passwordText:
+                net.state = "error"
+                net.last_error = "ERROR: Space in str"
             else:
-                if net.authorized:
-                    net.state = "starting_match"
-        elif net.state == "starting_match":
+                buttons.tickTextBoxes(events, screen)
+                if not net.authorize_requested:
+                    net.authorize(buttons.loginText, buttons.passwordText)
+                else:
+                    if net.authorized:
+                        net.state = "starting_match"
+        elif net.state == "starting_match" or net.state == "error":
             buttons.tickTextBoxes(events, screen)
         elif net.state == "requested_match":
+            if not net.match_requested:
+                plrs = []
+                sz = buttons.sizeOut
+                for i in range(buttons.playerCntOut-1):
+                    s = buttons.playerNamesOut[i]
+                    if ' ' in s:
+                        net.state = "error"
+                        net.last_error = "ERROR: Space in str"
+                    for j in range(i):
+                        if buttons.playerNamesOut[i] == buttons.playerNamesOut[j]:
+                            net.state = "error"
+                            net.last_error = "ERROR: Same players"
+                    if buttons.playerNamesOut[i] == net.login:
+                        net.state = "error"
+                        net.last_error = "ERROR: Same players"
+                    plrs.append(s)
+                if net.state != "error":
+                    net.startGame(plrs, sz)
             buttons.tickTextBoxes(events, screen)
         else:
             backgroundRect = getGameRect(renderer, game.size)
@@ -76,7 +99,8 @@ def main():
                         y = (
                             event.pos[1] - backgroundRect.top)//(renderer.scale*SPRITE_SZ+OFFSET)
                         try:
-                            game.go(x, y)
+                            if game.id == -1 or game.myPlayer == game.curPlayer:
+                                game.go(x, y)
                         except Exception as e:
                             print(e)
             pygame.draw.rect(screen, sepColor, backgroundRect)

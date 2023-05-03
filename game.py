@@ -22,10 +22,14 @@ class Node:
 
 
 class Game:
+    net = None
+
     def __init__(self, sz=0, players=0):
         if sz == 0 or players == 0:
             return
         self.finished = False
+        self.id = -1
+        self.myPlayer = 0
         self.turns = [(0, 0), (0, 0), (0, 0)]
         if players != 2 and players != 4:
             raise Exception("there could only be 2 or 4 players")
@@ -69,6 +73,10 @@ class Game:
                                 cnt += 1
                             used[pos[0]+dx][pos[1]+dy] = True
         if cnt == 0:
+            if self.id != -1:
+                if self.curPlayer == self.myPlayer:
+                    self.net.sock.send(str.encode(
+                        "concede "+str(self.id)+" "+str(self.myPlayer)))
             self.die()
 
     def go(self, x, y):
@@ -80,6 +88,9 @@ class Game:
             self.turns[3-self.remainingActions] = (x, y)
             self.remainingActions -= 1
             if self.remainingActions == 0:
+                if self.id != -1 and self.curPlayer == self.myPlayer:
+                    self.net.sock.send(str.encode("go "+str(self.id)+" "+str(self.turns[0][0])+" "+str(self.turns[0][1])+" "+str(
+                        self.turns[1][0])+" "+str(self.turns[1][1])+" "+str(self.turns[2][0])+" "+str(self.turns[2][1])))
                 self.remainingActions = 3
                 self.curPlayer = (self.curPlayer+1) % self.players
                 while not self.alive[self.curPlayer]:
@@ -93,10 +104,13 @@ class Game:
             self.field[pos[0]][pos[1]].undo()
             self.updateLegal()
 
-    def die(self):
+    def die(self, player=-2):
+        if player == -2:
+            player = self.curPlayer
         if not self.finished:
-            self.alive[self.curPlayer] = False
-            self.remainingActions = 3
+            if player == self.curPlayer:
+                self.remainingActions = 3
+            self.alive[player] = False
             cnt = 0
             for i in range(self.players):
                 if self.alive[i]:

@@ -29,6 +29,10 @@ class ButtonManager:
             text_surface = self.font.render(
                 self.net.state+"...", False, (255, 255, 255))
             screen.blit(text_surface, ((self.renderer.width-300)/2, 0))
+        if self.net.state == "error":
+            text_surface = self.font.render(
+                self.net.last_error, False, (255, 255, 255))
+            screen.blit(text_surface, ((self.renderer.width-300)/2, 0))
         if self.net.state == "login_window":
             text_surface = self.font.render('Login', False, (255, 255, 255))
             screen.blit(text_surface, ((self.renderer.width-300)/2, 0))
@@ -89,7 +93,7 @@ class ButtonManager:
                 text="Online game",
                 onClick=self.startOnline
             )
-        elif net.state == "connecting" or net.state == "logging_in" or net.state == "requested_match":
+        elif net.state == "connecting" or net.state == "logging_in" or net.state == "requested_match" or net.state == "error":
             self.buttons["cancel"] = Button(
                 screen,
                 (renderer.width-200)/2,
@@ -156,40 +160,42 @@ class ButtonManager:
                 onClick=self.requestStart
             )
         else:
-            self.buttons["players"] = Button(
-                screen,
-                0,
-                2*OFFSET,
-                sz,
-                sz,
+            if net.state == "local_game":
+                self.buttons["players"] = Button(
+                    screen,
+                    0,
+                    2*OFFSET,
+                    sz,
+                    sz,
 
-                inactiveColour=self.backColor,
-                image=self.getButtonImage(
-                    str(self.newParams["players"])+"plr"),
-                onClick=self.changePlayers
-            )
-            self.buttons["size"] = Button(
-                screen,
-                0,
-                1*sz+4*OFFSET,
-                sz,
-                sz,
+                    inactiveColour=self.backColor,
+                    image=self.getButtonImage(
+                        str(self.newParams["players"])+"plr"),
+                    onClick=self.changePlayers
+                )
+                self.buttons["size"] = Button(
+                    screen,
+                    0,
+                    1*sz+4*OFFSET,
+                    sz,
+                    sz,
 
-                inactiveColour=self.backColor,
-                image=self.getButtonImage(str(game.size)+"x"+str(game.size)),
-                onClick=self.resize
-            )
-            self.buttons["apply"] = Button(
-                screen,
-                0,
-                2*sz+6*OFFSET,
-                sz,
-                sz,
+                    inactiveColour=self.backColor,
+                    image=self.getButtonImage(
+                        str(game.size)+"x"+str(game.size)),
+                    onClick=self.resize
+                )
+                self.buttons["apply"] = Button(
+                    screen,
+                    0,
+                    2*sz+6*OFFSET,
+                    sz,
+                    sz,
 
-                inactiveColour=self.backColor,
-                image=self.getButtonImage("reset"),
-                onClick=self.apply
-            )
+                    inactiveColour=self.backColor,
+                    image=self.getButtonImage("reset"),
+                    onClick=self.apply
+                )
             self.buttons["show"] = Button(
                 screen,
                 0,
@@ -215,6 +221,18 @@ class ButtonManager:
                     "upscale") if self.renderer.scale == 1 else self.getButtonImage("downscale"),
                 onClick=self.resizeScreen
             )
+
+            self.buttons["menu"] = Button(
+                screen,
+                self.renderer.width-sz,
+                1*sz+4*OFFSET,
+                sz,
+                sz,
+
+                text="MENU",
+                onClick=self.menu
+            )
+
             self.buttons["undo"] = Button(
                 screen,
                 self.renderer.width-sz,
@@ -296,7 +314,11 @@ class ButtonManager:
         self.game.undo()
 
     def concede(self):
-        self.game.die()
+        if self.game.id == -1:
+            self.game.die()
+        else:
+            self.net.sock.send(str.encode(
+                "concede "+str(self.game.id)+" "+str(self.game.myPlayer)))
 
     def show(self):
         self.renderer.show = not self.renderer.show
