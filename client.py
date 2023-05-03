@@ -21,10 +21,14 @@ class Client:
     last_error = ""
 
     def disconnect(self):
-        self.sock.shutdown(socket.SHUT_RDWR)
-        self.connected = False
-        self.authorize_requested = False
-        self.authorized = False
+        if self.connected:
+            self.sock.close()
+            self.connected = False
+            self.authorize_requested = False
+            self.authorized = False
+            self.selector.unregister(self.sock)
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.setblocking(False)
 
     def reconnect(self, host="127.0.0.1", port=7777):
         if self.connected:
@@ -34,7 +38,7 @@ class Client:
             self.selector.register(self.sock, selectors.EVENT_READ, data=True)
             self.connected = True
             print("connected to server")
-        except:
+        except Exception as e:
             pass
 
     def authorize(self, login, password):
@@ -104,7 +108,6 @@ class Client:
         sock = key.fileobj
         data = key.data
         rec = sock.recv(2048)
-        print(rec)
         if rec:
             self.eval(rec, data)
         else:

@@ -149,6 +149,16 @@ class ButtonManager:
                 image=self.getButtonImage(str(game.size)+"x"+str(game.size)),
                 onClick=self.resize
             )
+            self.buttons["menu"] = Button(
+                screen,
+                self.renderer.width-sz,
+                1*sz+4*OFFSET,
+                sz,
+                sz,
+
+                text="MENU",
+                onClick=self.menu
+            )
             self.buttons["start"] = Button(
                 screen,
                 (renderer.width-300)/2,
@@ -334,6 +344,7 @@ class ButtonManager:
 
     def menu(self):
         self.net.state = "main_menu"
+        self.net.disconnect()
 
     def login(self):
         self.net.state = "logging_in"

@@ -130,7 +130,8 @@ class Server:
                     if name in game.acc:
                         game.acc.remove(name)
                         game.dis.append(name)
-            self.connected.pop(name)
+
+                self.connected.pop(name)
             print(data.address, "disconnected")
             self.selector.unregister(sock)
             sock.close()
