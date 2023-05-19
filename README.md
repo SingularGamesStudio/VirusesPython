@@ -1,6 +1,6 @@
 ### ВОЙНА ВИРУСОВ
 
-![alt text](https://github.com/SingularGamesStudio/VirusesPython/blob/dev/pictures/game_example.png?raw=true)
+![alt text](https://github.com/SingularGamesStudio/VirusesPython/blob/master/pictures/game_example.png?raw=true)
 
 ## Правила игры
 
