@@ -1,0 +1,3 @@
+FPS = 30
+SPRITE_SZ = 32
+OFFSET = 1
